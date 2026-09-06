@@ -65,6 +65,13 @@ button:focus-visible{outline:3px solid var(--name);outline-offset:3px}
 .tile .who{font-size:14px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
 .tile .who svg{width:20px;height:20px}
 .tile.locked{opacity:.45}
+.levels{display:flex;gap:12px}
+.lvl{flex:1;background:var(--card);border-radius:18px;box-shadow:var(--shadow);border:4px solid transparent;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:84px}
+.lvl.on{border-color:var(--accent)}
+.lvl .kites{display:flex;gap:2px}
+.lvl .kites svg{width:30px;height:30px}
+.lvl .lab{font-family:var(--f-ui);font-size:14px;color:var(--ink-soft)}
+.lvl.on .lab{color:var(--ink)}
 .homefoot{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .gate{width:56px;height:56px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;position:relative;overflow:hidden}
 .gate svg{width:26px;height:26px;position:relative}
@@ -155,6 +162,7 @@ button:focus-visible{outline:3px solid var(--name);outline-offset:3px}
 <section class="screen on" id="s-home">
   <div class="home">
     <div class="brand">Wugs<small id="home-sub">Make-believe words</small></div>
+    <div class="levels" id="levels"></div>
     <div class="tiles" id="tiles"></div>
     <div class="homefoot">
       <span class="done-note" id="home-note"></span>
@@ -279,20 +287,27 @@ const STAGES=[{keys:['vc','cvc'],name:'short vowels'},{keys:['cvce','rcon'],name
 // Real words matched to each pattern stage, for "real or make-believe"
 const REAL = {
   0:('cat sun dog bed pig hat bug wet fox cup mud fan jog kid van top leg hop map sit run big red hot not but can had get let him yes ten box six jam log nut pot wig zip lip rug web bat pen dig hen sad mom dad up at in on it if us an ox egg '+
-     'bag bad cab cap cot cut cub dam den dip dot dug fig fin fit fog fun gap gas gum gut ham hid hip hit hog hug hum hut jet jig job jug lab lap led lid lit lot mad man mat men met mix mob mop nap net nod pad pan pat pet pin pit pod pop pup rag ram rat rib rid rim rip rob rod rot rub sag sap sob tab tag tan tap tin tip tot tub tug wag wax win wit yak yam yap yet zap am as').split(' '),
+     'bag bad cab cap cot cut cub dam den dip dot dug fig fin fit fog fun gap gas gum gut ham hid hip hit hog hug hum hut jet jig job jug lab lap led lid lit lot mad man mat men met mix mob mop nap net nod pad pan pat pet pin pit pod pop pup rag ram rat rib rid rim rip rob rod rot rub sag sap sob tab tag tan tap tin tip tot tub tug wag wax win wit yak yam yap yet zap am as '+
+     'bib bud bun cod cog cop cub dab dud fib fob gag gob hem hog hub jab jut keg kin kit lag lug mug nab nag nip pal peg pod pug rap rig rut sub sum vet wed wok hex fax lox tux yum ram rot sip tot vat wig zag bog cot dim fed gum hum jog kip lit mop nod pop rod sod tan wet yip zip').split(' '),
   1:('cake ride home cute lake bike nose tune gate rope five mule make time hope kite bone rule tape dime cone tube wave mine note car farm bird corn fork park star barn born hurt turn girl shirt dirt first torn cart harm curl burn fern her fur sort port '+
      'bake bite cape cave code cube cure date dive dome dune fade fame file fine fire fuse game gave hide hike hire hole huge joke lame lane late life like line lime mane mate mile mode mole name nine pale pile pine pipe poke pole race rake ripe robe rode rose rude safe sale same save side size tale tide tile tone vase vine vote wade wake wide wife wine wipe wire woke zone '+
-     'bark card dark dart hard jar mark part tar yard yarn cord fort horn pork storm torch curb surf turf firm sir stir herd jerk perk term verb moon food root boot zoo too tree feet seed need keep weep boat coat road soap toad rain tail mail nail pail wait').split(' '),
+     'bark card dark dart hard jar mark part tar yard yarn cord fort horn pork storm torch curb surf turf firm sir stir herd jerk perk term verb moon food root boot zoo too tree feet seed need keep weep boat coat road soap toad rain tail mail nail pail wait '+
+     'cane cove dame dote fume gale gaze hive hose kale lace mute nape node pave pore rage sane site tame tote wove yoke bore core dare fare lore pure rare sore tore wore ward warm warn ford lord nurse purse curse beam bean beat heat meat neat seat leaf leak meal peak real deal heap leap loaf moan roam soak goal foam coal loan deep heel jeep meet peel reel weed beak dean lean wheat cheek').split(' '),
   2:('ship chin fish shop chop thin bath math wish rich such much moth dish path shut chat that this with frog plant nest stop hand milk drum swim tent fast sled grab flag crab spin plum step jump lamp desk clock trip snap glad slip twig brick truck black frost '+
      'shed shell shift shock shot chap check chest chick chill chip chum chunk thank thick think thud thump whip when which cloth bench lunch munch pinch punch ranch rush sash blast blend blink block blob blot brag bring brush clam clap clip club crop crust drag dress drill drop flap flat flip flock glass grass grin grip plot plug plus print scan skin skip skunk slam slid slim slot smell snack sniff spot spill stack stem stick still stomp stuck swept swing trap trick trim trunk twist '+
-     'camp damp dump hump bump bend band bond fond land lend mend pond sand send wind went hunt mist must rest vest west wisp ask disk dusk mask risk task tusk help gulp yelp belt felt melt silk bulk hulk elk').split(' '),
+     'camp damp dump hump bump bend band bond fond land lend mend pond sand send wind went hunt mist must rest vest west wisp ask disk dusk mask risk task tusk help gulp yelp belt felt melt silk bulk hulk elk '+
+     'shack shark sharp shore short shout chain chalk charm chart cheap cheat cheer chess chirp chore chose thorn those whisk white blimp blink bloom bluff blush brake brand brass brave breed bride brisk brown bunch clash clasp clean clerk cliff cling cloak clown clump coach coast craft crane crash creek crept crib croak crook drank dream drift drink drove drown flake flame flash fleet flesh flick float flute frame frank fresh fried frown glade glare gleam glide gloom grade grain grasp graze greed greet grill grind groan groom grove plank plate plead plume plump plush pride prime prize probe proud prowl prune skate slate sleek sleep sleet slick slide slime sling slope sloth slump smack smart smash smile smoke snare sneak snore snort snout spade spark speak speck spend spike spine spoke spool spore sport stage stain stair stake stale stamp stand stare stark steak steal steam steel steep stern sting stink stock stone stool stoop store stork stove stump stung swamp swarm swift swipe swoop trace track trade trail tramp trash tread treat tribe trout truce trust tweet twice twine').split(' '),
   3:('strip strap scrub split sprint string spring street splash strand shrimp thrill throb scram sprig strum shrub shred thrust stripe struck scrap sprout squint splat '+
-     'script splint strict strong thrift throne shrank shrink shrug strike stroke thrash three throat throw scream').split(' ')
+     'script splint strict strong thrift throne shrank shrink shrug strike stroke thrash three throat throw scream '+
+     'scrape screen screw scroll shrewd shriek shrill shrine spleen splice spline sprang spray spread spruce sprung squad squat squirm strain straw stray streak stream stress stride strife stroll strut thread threw thrice thrive throng').split(' ')
 };
 
 // Picture words for "find the word": [word, emoji]
 const PICS = [['cat','🐱'],['dog','🐶'],['pig','🐷'],['sun','☀️'],['bed','🛏️'],['hat','🎩'],['bug','🐛'],['fox','🦊'],['bus','🚌'],['box','📦'],['hen','🐔'],['pen','🖊️'],['web','🕸️'],['egg','🥚'],['map','🗺️'],['leg','🦵'],['nut','🥜'],['cup','☕'],['ship','🚢'],['fish','🐟'],['frog','🐸'],['crab','🦀'],['drum','🥁'],['nest','🪺'],['tent','⛺'],['flag','🚩'],['clock','⏰'],['truck','🚚'],['brick','🧱'],['cake','🎂'],['bike','🚲'],['kite','🪁'],['bone','🦴'],['nose','👃'],['rose','🌹'],['car','🚗'],['star','⭐'],['corn','🌽'],['fork','🍴'],['shirt','👕'],['bird','🐦'],['girl','👧'],['moon','🌙'],['tree','🌳'],['boat','⛵'],['snake','🐍'],['sock','🧦'],['duck','🦆'],['milk','🥛'],['hand','✋'],['ring','💍'],['fire','🔥'],['plant','🪴'],['spoon','🥄'],['bread','🍞'],['apple','🍎'],['whale','🐳'],['shell','🐚'],['chick','🐤'],['broom','🧹'],['train','🚆'],['plane','✈️'],['ghost','👻'],['crown','👑'],['sheep','🐑'],['snail','🐌'],['drop','💧'],['gift','🎁'],['bell','🔔'],['key','🔑'],
-  ['bat','🦇'],['bee','🐝'],['cow','🐮'],['rat','🐀'],['bear','🐻'],['goat','🐐'],['deer','🦌'],['wolf','🐺'],['seal','🦭'],['shark','🦈'],['squid','🦑'],['worm','🪱'],['leaf','🍃'],['grape','🍇'],['cheese','🧀'],['bowl','🥣'],['pot','🍲'],['jar','🫙'],['chair','🪑'],['door','🚪'],['phone','📱'],['book','📖'],['bag','👜'],['boot','🥾'],['dress','👗'],['gem','💎'],['coin','🪙'],['ball','⚽'],['cloud','☁️'],['rain','🌧️'],['snow','❄️'],['foot','🦶'],['lips','👄'],['tooth','🦷'],['brain','🧠'],['king','🤴'],['queen','👸'],['horse','🐴'],['mouse','🐭'],['pizza','🍕'],['rocket','🚀'],['robot','🤖']];
+  ['bat','🦇'],['bee','🐝'],['cow','🐮'],['rat','🐀'],['bear','🐻'],['goat','🐐'],['deer','🦌'],['wolf','🐺'],['seal','🦭'],['shark','🦈'],['squid','🦑'],['worm','🪱'],['leaf','🍃'],['grape','🍇'],['cheese','🧀'],['bowl','🥣'],['pot','🍲'],['jar','🫙'],['chair','🪑'],['door','🚪'],['phone','📱'],['book','📖'],['bag','👜'],['boot','🥾'],['dress','👗'],['gem','💎'],['coin','🪙'],['ball','⚽'],['cloud','☁️'],['rain','🌧️'],['snow','❄️'],['foot','🦶'],['lips','👄'],['tooth','🦷'],['brain','🧠'],['king','🤴'],['queen','👸'],['horse','🐴'],['mouse','🐭'],['pizza','🍕'],['rocket','🚀'],['robot','🤖'],
+  ['cab','🚕'],['van','🚐'],['pin','📌'],['lock','🔒'],['pie','🥧'],['brush','🖌️'],['scarf','🧣'],['coat','🧥'],['lemon','🍋'],['peach','🍑'],['salt','🧂'],['taco','🌮'],['pan','🍳'],['couch','🛋️'],['bath','🛁'],['soap','🧼'],['wind','🌬️'],['bolt','⚡'],['rock','🪨'],['log','🪵'],['dice','🎲'],['net','🥅'],['ski','🎿'],['sled','🛷'],['swan','🦢'],['shrimp','🦐'],['glove','🧤'],['melon','🍈'],['crown','👑'],['bread','🍞'],['toast','🍞'],['clam','🦪'],['moth','🦋'],['tulip','🌷'],['candle','🕯️'],['ladder','🪜'],['mirror','🪞'],['magnet','🧲'],['basket','🧺'],['pencil','✏️'],['carrot','🥕'],['banana','🍌'],['cherry','🍒'],['pumpkin','🎃'],['rabbit','🐰'],['turtle','🐢'],['dragon','🐉'],['spider','🕷️'],['monkey','🐵'],['zebra','🦓'],['tiger','🐯'],['lion','🦁'],['camel','🐫'],['panda','🐼'],['koala','🐨'],['hippo','🦛'],['parrot','🦜'],['pillow','🛏️'],['window','🪟'],['button','🔘'],['ticket','🎫'],['trophy','🏆'],['medal','🏅'],['guitar','🎸'],['violin','🎻'],['trumpet','🎺'],['balloon','🎈'],['puzzle','🧩'],['helmet','⛑️'],['jacket','🧥'],['mitten','🧤'],['sandal','👡'],['wagon','🛒']];
+Object.keys(REAL).forEach(k=>{ REAL[k]=[...new Set(REAL[k])]; });
+{ const seen=new Set(); for(let i=PICS.length-1;i>=0;i--){ if(seen.has(PICS[i][0])) PICS.splice(i,1); else seen.add(PICS[i][0]); } }
 const PIC_EMOJI=Object.fromEntries(PICS);
 
 // First-grade NWF benchmark goals (DIBELS 8, goals dated July 2020). [Beginning, Middle, End]
@@ -305,21 +320,23 @@ const PERIOD_NAMES=['Beginning of year','Middle of year','End of year'];
 <script>
 // ---------- State ----------
 const KEY='kite-reader-v2';
-const DEFAULT={v:2, settings:{period:'auto',stageOverride:null,voice:'',rate:0.8}, mastery:{}, stage:0, stageAt:null, sessions:[], timed:[], confus:{}, realMiss:{}, todayKey:'', today:{rounds:0,ms:0,done:false}};
+const DEFAULT={v:2, level:0, settings:{period:'auto',stageOverride:null,voice:'',rate:0.8}, mastery:{}, stage:0, stageAt:null, sessions:[], timed:[], confus:{}, realMiss:{}, todayKey:'', today:{rounds:0,ms:0,done:false}};
 let S=load();
 function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign({},DEFAULT,o,{settings:Object.assign({},DEFAULT.settings,o.settings||{})}); } }catch(e){} return JSON.parse(JSON.stringify(DEFAULT)); }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function rollDay(){ const k=todayKey(); if(S.todayKey!==k){ S.todayKey=k; S.today={rounds:0,ms:0,done:false}; save(); } }
 function sessionIdx(){ return S.sessions.length; }
-function currentSession(){ rollDay(); let s=S.sessions[S.sessions.length-1]; if(!s||s.date!==S.todayKey){ s={date:S.todayKey,cards:0,helped:0,realN:0,realOk:0,picN:0,picOk:0,minutes:0,stage:stage()}; S.sessions.push(s); } return s; }
+function currentSession(){ rollDay(); let s=S.sessions[S.sessions.length-1]; if(!s||s.date!==S.todayKey){ s={date:S.todayKey,cards:0,helped:0,realN:0,realOk:0,picN:0,picOk:0,minutes:0,stage:lvlStage(),level:S.level||0}; S.sessions.push(s); } return s; }
 function periodIdx(){ const p=S.settings.period; if(p==='B')return 0; if(p==='M')return 1; if(p==='E')return 2; const m=new Date().getMonth(); if(m>=7&&m<=10)return 0; if(m===11||m<=1)return 1; return 2; }
 function stage(){ return S.settings.stageOverride!==null&&S.settings.stageOverride!==undefined ? S.settings.stageOverride : S.stage; }
+function lvlStage(){ const lv=S.level||0; return lv===0?stage():lv===1?Math.max(2,stage()):3; }
 
 // ---------- Utilities ----------
 const $=id=>document.getElementById(id);
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
 function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('on'),2200); }
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); }
 document.querySelectorAll('[data-icon]').forEach(el=>{ el.innerHTML=ICONS[el.dataset.icon]||''; });
@@ -369,18 +386,23 @@ async function showParts(container){
   await wait(150); word.classList.remove('split'); await wait(500);
 }
 function stageOf(w){
-  if(/^[^aeiouy]{3}/.test(w)) return 3;
-  if(/(sh|ch|th|wh|ng|ck)/.test(w)||/^[^aeiouy]{2}[aeiou]/.test(w)||/[aeiou][^aeiouy]{2}$/.test(w)) return 2;
+  const groups=(w.match(/[aeiouy]+/g)||[]).length;
+  if(/^[^aeiouy]{3}/.test(w)||w.length>=7) return 3;
+  if(/(sh|ch|th|wh|ng|ck)/.test(w)||/^[^aeiouy]{2}[aeiou]/.test(w)||/[aeiou][^aeiouy]{2}$/.test(w)||w.length>=6||(groups>=2&&!/[^aeiou]e$/.test(w))) return 2;
   if(/[aeiou][^aeiou]e$/.test(w)||/(ar|or|er|ir|ur|ee|oo|oa|ai|ea|ey|ow|ou)/.test(w)) return 1;
   return 0;
 }
+const REAL_SET=new Set(Object.values(REAL).flat().concat(PICS.map(p=>p[0])));
+const nearCache={};
+function nearWords(w){ if(nearCache[w]) return nearCache[w]; const out=[]; for(let i=0;i<w.length;i++) for(const ch of 'abcdefghijklmnopqrstuvwxyz'){ if(ch===w[i]) continue; const alt=w.slice(0,i)+ch+w.slice(i+1); if(REAL_SET.has(alt)) out.push(alt); } return nearCache[w]=out; }
+const isNearReal=w=>nearWords(w).length>0;
 
 // ---------- Mastery ----------
 function M(key){ return S.mastery[key]=S.mastery[key]||{s:0,due:0,help:0,seen:0,ok:0,streak:0}; }
 function markOk(key){ const m=M(key); m.seen++; m.ok++; m.streak++; m.s=Math.min(2,m.s+1); m.due=sessionIdx()+[1,3,7][Math.min(m.streak-1,2)]; }
 function markHelp(key){ const m=M(key); m.seen++; m.help++; m.streak=0; m.s=0; m.due=sessionIdx(); }
-function nonsensePool(){ let p=[]; for(let i=0;i<=stage();i++) STAGES[i].keys.forEach(k=>p=p.concat(NWF[k])); return p; }
-function newestPool(){ let p=[]; STAGES[stage()].keys.forEach(k=>p=p.concat(NWF[k])); return p; }
+function nonsensePool(){ let p=[]; for(let i=0;i<=lvlStage();i++) STAGES[i].keys.forEach(k=>p=p.concat(NWF[k])); return p; }
+function newestPool(){ let p=[]; STAGES[lvlStage()].keys.forEach(k=>p=p.concat(NWF[k])); return p; }
 function buildRound(n){
   const pool=nonsensePool(), idx=sessionIdx(), mm=S.mastery;
   const learning=pool.filter(k=>mm[k]&&mm[k].s===0&&mm[k].seen>0);
@@ -411,6 +433,8 @@ function renderHome(){
   rollDay(); const done=S.today.done;
   $('tiles').innerHTML=ACTS.map(a=>`<button class="tile ${done?'locked':''}" data-act="${a.id}" aria-label="${a.label}"><span class="glyph">${a.glyph}</span><span class="label">${a.label}</span><span class="who">${icon(a.whoIcon)} ${a.who}</span></button>`).join('');
   $('home-note').textContent=done?'Reading time is finished for today.':(S.today.rounds?`${S.today.rounds} round${S.today.rounds>1?'s':''} today`:'');
+  $('levels').innerHTML=[0,1,2].map(i=>`<button class="lvl ${(S.level||0)===i?'on':''}" data-lv="${i}" aria-label="${['Easy','Medium','Hard'][i]}"><span class="kites">${icon('kite').repeat(i+1)}</span><span class="lab">${['Easy','Medium','Hard'][i]}</span></button>`).join('');
+  document.querySelectorAll('.lvl').forEach(b=>b.addEventListener('click',()=>{ S.level=+b.dataset.lv; save(); renderHome(); }));
   document.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{ if(S.today.done){ show('s-alldone'); return; } start(t.dataset.act); }));
 }
 function pointerHold(el,ms,onDone,fillEl){
@@ -424,25 +448,44 @@ pointerHold($('gate'),3000,()=>openParent(),$('gate').querySelector('.fill'));
 
 // ---------- Play engine ----------
 const P={act:null,queue:[],i:0,total:0,cards:0,helped:0,ok:0,helpedThis:false,busy:false,enter:0,cur:null};
-const ROUND_N={cards:12,real:12,pic:8};
+const ROUND_N={cards:20,real:20,pic:20};
 function setKite(f){ $('kite').style.left=(4+92*Math.max(0,Math.min(1,f)))+'%'; }
 function leavePlay(){ if(P.enter){ const ms=Date.now()-P.enter; S.today.ms+=ms; const s=currentSession(); s.minutes=(s.minutes||0)+ms/60000; P.enter=0; } save(); }
 $('btn-home').addEventListener('click',()=>{ leavePlay(); renderHome(); show('s-home'); });
 function start(act){
   rollDay(); P.act=act; P.i=0; P.cards=0; P.helped=0; P.ok=0; P.busy=false; P.enter=Date.now();
   if(act==='cards') P.queue=buildRound(ROUND_N.cards);
-  if(act==='real'){ const n=ROUND_N.real/2; const fake=shuffle(newestPool()).slice(0,Math.ceil(n*0.6)).concat(shuffle(nonsensePool()).slice(0,n)).filter((w,i,a)=>a.indexOf(w)===i).slice(0,n); let real=[]; for(let i=0;i<=stage();i++) real=real.concat(REAL[i]); real=shuffle(real.filter(w=>stageOf(w)<=stage())).slice(0,n); P.queue=shuffle(fake.map(w=>({w,real:false})).concat(real.map(w=>({w,real:true})))); }
-  if(act==='pic'){ const cands=PICS.filter(([w])=>stageOf(w)<=stage()); P.queue=shuffle(cands.length>=8?cands:PICS).slice(0,ROUND_N.pic).map(([w,e])=>({w,e,opts:distractors(w)})); }
+  if(act==='real'){ const n=ROUND_N.real/2, lv=S.level||0, fp=nonsensePool(); let fake;
+    if(lv===0){ fake=shuffle(newestPool()).slice(0,Math.ceil(n*0.6)).concat(shuffle(fp)).filter((w,i,a)=>a.indexOf(w)===i).slice(0,n); }
+    else { const near=shuffle(fp.filter(isNearReal)); const k=Math.min(near.length, lv===2?n:Math.ceil(n/2)); const nearSet=new Set(near.slice(0,k)); fake=[...nearSet].concat(shuffle(fp.filter(w=>!nearSet.has(w))).slice(0,n-k)); }
+    let real=[]; for(let i=0;i<=lvlStage();i++) real=real.concat(REAL[i]); real=real.filter(w=>stageOf(w)<=lvlStage());
+    if(lv===2){ const hardReal=shuffle(real.filter(w=>stageOf(w)>=2)); if(hardReal.length>=n) real=hardReal.slice(0,Math.ceil(n*0.7)).concat(shuffle(real.filter(w=>stageOf(w)<2))); }
+    real=shuffle(real).filter((w,i,a)=>a.indexOf(w)===i).slice(0,n);
+    P.queue=shuffle(fake.map(w=>({w,real:false})).concat(real.map(w=>({w,real:true})))); }
+  if(act==='pic'){ const lv=S.level||0; let cands=PICS.filter(([w])=>stageOf(w)<=lvlStage()); if(lv===2){ const h=cands.filter(([w])=>stageOf(w)>=1); if(h.length>=ROUND_N.pic) cands=h; } P.queue=shuffle(cands.length>=ROUND_N.pic?cands:PICS).slice(0,ROUND_N.pic).map(([w,e])=>({w,e,opts:distractors(w,lv===0?3:4,lv===2)})); }
   P.total=P.queue.length; show('s-play'); setKite(0);
   $('bar').innerHTML= act==='cards' ? `<button class="act readit" id="b-read" aria-label="Check">${icon('check')}</button>` : '';
   if(act==='cards'){ $('b-read').addEventListener('click',onCheck); }
   next();
 }
-function distractors(w){
-  const vowels=['a','e','i','o','u']; const out=new Set(); const m=w.match(/[aeiou]/); const single=(w.match(/[aeiou]/g)||[]).length===1 && !/e$/.test(w);
-  if(m&&single){ for(const v of shuffle(vowels)){ const alt=w.slice(0,m.index)+v+w.slice(m.index+1); if(alt!==w) out.add(alt); if(out.size>=2) break; } }
-  const cons='bdfgklmnprstvwz'.split('');
-  while(out.size<2){ const c=cons[Math.floor(Math.random()*cons.length)]; const alt=/^[^aeiou]/.test(w)? c+w.slice(1) : w.slice(0,-1)+c; if(alt!==w&&!PIC_EMOJI[alt]) out.add(alt); }
+const RUDE=new Set('queef queer jizz cum tit tits ass arse shit fuck cock dick cunt fag fap piss poop crap damn sex wank twat slut whore bitch nig spic kike chink gook turd fart butt boob boobs dong wang dyke homo tard pussy pube pubes anus anal bum suck prick scum dildo penis vagina'.split(' '));
+const VOW='aeiou', CONS='bcdfghjklmnprstvwyz';
+function mutate(w){
+  const L=w.length; const ok=i=>{ const c=w[i]; if(c==='q'||(i>0&&w[i-1]==='q')) return false; const isV=VOW.includes(c);
+    if(isV){ if(i>0&&VOW.includes(w[i-1])) return false; if(i<L-1&&VOW.includes(w[i+1])) return false; if(i===L-1&&c==='e') return false; return true; }
+    if(i===0) return L>1&&VOW.includes(w[1]); if(i===L-1) return VOW.includes(w[L-2]); return VOW.includes(w[i-1])&&VOW.includes(w[i+1]); };
+  const idxs=[...w].map((c,i)=>i).filter(ok); if(!idxs.length) return null;
+  const FINALS='bdfgklmnprstz';
+  for(let t=0;t<40;t++){ const i=pick(idxs); const c=w[i]; const pool=VOW.includes(c)?VOW:(i===L-1?FINALS:CONS); const r=pool[Math.floor(Math.random()*pool.length)]; if(r===c) continue;
+    const alt=w.slice(0,i)+r+w.slice(i+1); if(alt===w||RUDE.has(alt)||PIC_EMOJI[alt]||/(.)\1\1/.test(alt)) continue; return alt; }
+  return null;
+}
+function distractors(w,n,hard){
+  const want=n-1; const out=new Set();
+  if(hard){ shuffle(nearWords(w).filter(x=>!RUDE.has(x)&&!PIC_EMOJI[x])).slice(0,want).forEach(x=>out.add(x)); }
+  let guard=0; while(out.size<want&&guard++<80){ const alt=mutate(w); if(alt) out.add(alt); }
+  const vowels=['a','e','i','o','u']; const m=w.match(/[aeiou]/);
+  if(out.size<want&&m){ for(const v of shuffle(vowels)){ if(out.size>=want) break; const alt=w.slice(0,m.index)+v+w.slice(m.index+1); if(alt!==w&&!RUDE.has(alt)) out.add(alt); } }
   return shuffle([w,...out]);
 }
 function next(){
@@ -484,7 +527,7 @@ function endRound(){
   leavePlay(); const s=currentSession();
   if(P.act==='cards'){ s.cards+=P.cards; s.helped+=P.helped; maybeUnlock(); }
   S.today.rounds++; save();
-  const over=S.today.rounds>=3||S.today.ms>=12*60*1000; if(over){ S.today.done=true; save(); }
+  const over=S.today.rounds>=3||S.today.ms>=18*60*1000; if(over){ S.today.done=true; save(); }
   $('end-title').textContent=over?'The kite flew all the way up.':'The kite flew high.';
   $('end-text').textContent=over?'Reading time is finished for today.':'';
   $('btn-end-more').hidden=over; show('s-end');
@@ -507,7 +550,8 @@ function renderHow(){
   <div class="tipcard"><b>Find the word (alone)</b>A picture and three words that differ by one letter. Tap the word that matches. A wrong tap fades that choice and the child gets one more try before the answer is shown. This checks that the child reads every letter rather than guessing from the first one. Only first-try answers count in Progress.</div>
   <div class="tipcard"><b>Patterns unlock in stages</b>Short vowels first, then silent e and r-controlled vowels, then digraphs and blends, then three-consonant blends. A stage unlocks after two flashcard sessions above 90% without help. You can set the stage by hand in Settings.</div>
   <div class="tipcard"><b>Three-second rule</b>If the child stalls for three seconds, tell them the word, tap the hand, and move on. Say what they did well, such as "you said every sound," rather than "good job."</div>
-  <div class="tipcard"><b>Keep it short</b>Rounds are 8 to 12 cards. After three rounds or twelve minutes the app stops for the day. Make-believe words should be a small part of reading time. Read real books together every day.</div>
+  <div class="tipcard"><b>Easy, Medium, Hard</b>The kites on the home screen set the level for all three games. Easy follows the unlocked pattern stage. Medium opens digraphs and blends and mixes in make-believe words that are one letter away from real ones. Hard uses every pattern, three-consonant blends, four picture choices, and distractors that are real words.</div>
+  <div class="tipcard"><b>Keep it short</b>Rounds are 20 cards. After three rounds or eighteen minutes the app stops for the day. Make-believe words should be a small part of reading time. Read real books together every day.</div>
   </div>`;
 }
 // ---------- Timed run (NWF) ----------
@@ -593,7 +637,7 @@ function renderSettings(){
   $('set-rate').addEventListener('input',e=>{ S.settings.rate=+e.target.value; $('set-rate-v').textContent=S.settings.rate; save(); });
   $('pane-settings').querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{ S.settings.period=b.dataset.period; save(); openParent(); }));
   $('pane-settings').querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{ S.settings.stageOverride=b.dataset.stage==='auto'?null:+b.dataset.stage; save(); openParent(); }));
-  $('set-more').addEventListener('click',()=>{ rollDay(); S.today.done=false; S.today.rounds=Math.min(S.today.rounds,2); S.today.ms=Math.min(S.today.ms,9*60*1000); save(); toast('One more round allowed.'); renderSettings(); });
+  $('set-more').addEventListener('click',()=>{ rollDay(); S.today.done=false; S.today.rounds=Math.min(S.today.rounds,2); S.today.ms=Math.min(S.today.ms,14*60*1000); save(); toast('One more round allowed.'); renderSettings(); });
   pointerHold($('set-reset'),3000,()=>{ localStorage.removeItem(KEY); S=JSON.parse(JSON.stringify(DEFAULT)); save(); toast('Erased.'); openParent(); });
 }
 // ---------- Start ----------
