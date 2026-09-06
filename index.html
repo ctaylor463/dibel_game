@@ -509,7 +509,7 @@ async function onReal(b){
   document.querySelectorAll('.choice').forEach(x=>x.classList.toggle('dim',x!==correctBtn)); correctBtn.classList.add('glow');
   if(it.real&&PIC_EMOJI[it.w]) card.insertAdjacentHTML('beforeend',`<span class="corner">${PIC_EMOJI[it.w]}</span>`);
   card.classList.add(right?'ok':'oops');
-  if(right){ P.ok++; await wait(900); } else { await showParts($('stage')); await wait(300); }
+  if(right){ P.ok++; await wait(900); } else { await showParts($('stage')); await wait(2200); }
   P.cards++; P.i++; save(); next();
 }
 async function onPic(b){
@@ -520,14 +520,14 @@ async function onPic(b){
   if(!P.triedThis){ s.picN++; s.picOk++; P.ok++; }
   document.querySelectorAll('.choice').forEach(x=>x.classList.toggle('dim',x!==correctBtn)); correctBtn.classList.add('glow');
   card.classList.remove('oops'); card.classList.add(right?'ok':'oops');
-  if(right){ await wait(900); } else { correctBtn.innerHTML=wordHTML(it.w).replace('class="word"','class="word" style="font-size:inherit"'); await wait(400); await showParts(correctBtn); await wait(300); }
+  if(right){ await wait(900); } else { correctBtn.innerHTML=wordHTML(it.w).replace('class="word"','class="word" style="font-size:inherit"'); await wait(600); await showParts(correctBtn); await wait(2200); }
   P.cards++; P.i++; save(); next();
 }
 function endRound(){
   leavePlay(); const s=currentSession();
   if(P.act==='cards'){ s.cards+=P.cards; s.helped+=P.helped; maybeUnlock(); }
   S.today.rounds++; save();
-  const over=S.today.rounds>=3||S.today.ms>=18*60*1000; if(over){ S.today.done=true; save(); }
+  const over=S.today.rounds>=6||S.today.ms>=24*60*1000; if(over){ S.today.done=true; save(); }
   $('end-title').textContent=over?'The kite flew all the way up.':'The kite flew high.';
   $('end-text').textContent=over?'Reading time is finished for today.':'';
   $('btn-end-more').hidden=over; show('s-end');
@@ -551,7 +551,7 @@ function renderHow(){
   <div class="tipcard"><b>Patterns unlock in stages</b>Short vowels first, then silent e and r-controlled vowels, then digraphs and blends, then three-consonant blends. A stage unlocks after two flashcard sessions above 90% without help. You can set the stage by hand in Settings.</div>
   <div class="tipcard"><b>Three-second rule</b>If the child stalls for three seconds, tell them the word, tap the hand, and move on. Say what they did well, such as "you said every sound," rather than "good job."</div>
   <div class="tipcard"><b>Easy, Medium, Hard</b>The kites on the home screen set the level for all three games. Easy follows the unlocked pattern stage. Medium opens digraphs and blends and mixes in make-believe words that are one letter away from real ones. Hard uses every pattern, three-consonant blends, four picture choices, and distractors that are real words.</div>
-  <div class="tipcard"><b>Keep it short</b>Rounds are 20 cards. After three rounds or eighteen minutes the app stops for the day. Make-believe words should be a small part of reading time. Read real books together every day.</div>
+  <div class="tipcard"><b>Keep it short</b>Rounds are 20 cards. After six rounds or twenty-four minutes the app stops for the day. Make-believe words should be a small part of reading time. Read real books together every day.</div>
   </div>`;
 }
 // ---------- Timed run (NWF) ----------
@@ -637,7 +637,7 @@ function renderSettings(){
   $('set-rate').addEventListener('input',e=>{ S.settings.rate=+e.target.value; $('set-rate-v').textContent=S.settings.rate; save(); });
   $('pane-settings').querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{ S.settings.period=b.dataset.period; save(); openParent(); }));
   $('pane-settings').querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{ S.settings.stageOverride=b.dataset.stage==='auto'?null:+b.dataset.stage; save(); openParent(); }));
-  $('set-more').addEventListener('click',()=>{ rollDay(); S.today.done=false; S.today.rounds=Math.min(S.today.rounds,2); S.today.ms=Math.min(S.today.ms,14*60*1000); save(); toast('One more round allowed.'); renderSettings(); });
+  $('set-more').addEventListener('click',()=>{ rollDay(); S.today.done=false; S.today.rounds=Math.min(S.today.rounds,5); S.today.ms=Math.min(S.today.ms,20*60*1000); save(); toast('One more round allowed.'); renderSettings(); });
   pointerHold($('set-reset'),3000,()=>{ localStorage.removeItem(KEY); S=JSON.parse(JSON.stringify(DEFAULT)); save(); toast('Erased.'); openParent(); });
 }
 // ---------- Start ----------
