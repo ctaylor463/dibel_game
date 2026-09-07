@@ -395,7 +395,7 @@ async function showParts(container){
 }
 function stageOf(w){
   const groups=(w.match(/[aeiouy]+/g)||[]).length;
-  if(/^[aeiou][^aeiouy]{1,2}$/.test(w)) return 0;
+  if(/^[aeiou][^aeiouwy]{1,2}$/.test(w)) return 0;
   if(/^[^aeiouy]{3}/.test(w)||w.length>=7) return 3;
   if(w.length<=5&&/[aeiou]r[^aeiouy]?$/.test(w)&&!/^[^aeiouy]{2}/.test(w)&&!/(sh|ch|th|wh|ng|ck)/.test(w)&&groups===1) return 1;
   if(/(sh|ch|th|wh|ng|ck)/.test(w)||/^[^aeiouy]{2}[aeiou]/.test(w)||/[aeiou][^aeiouy]{2}$/.test(w)||w.length>=6||(groups>=2&&!/[^aeiou]e$/.test(w))) return 2;
