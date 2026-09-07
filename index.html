@@ -325,7 +325,7 @@ const PERIOD_NAMES=['Beginning of year','Middle of year','End of year'];
 <script>
 // ---------- State ----------
 const KEY='kite-reader-v2';
-const DEFAULT={v:2, level:0, settings:{period:'auto',stageOverride:null,voice:'',rate:0.8}, mastery:{}, stage:0, stageAt:null, sessions:[], timed:[], confus:{}, realMiss:{}, todayKey:'', today:{rounds:0,ms:0,done:false}};
+const DEFAULT={v:2, level:0, settings:{period:'auto',stageOverride:null,voice:'',rate:0.8,limit:false}, mastery:{}, stage:0, stageAt:null, sessions:[], timed:[], confus:{}, realMiss:{}, todayKey:'', today:{rounds:0,ms:0,done:false}};
 let S=load();
 function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const o=JSON.parse(raw); return Object.assign({},DEFAULT,o,{settings:Object.assign({},DEFAULT.settings,o.settings||{})}); } }catch(e){} return JSON.parse(JSON.stringify(DEFAULT)); }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
@@ -441,12 +441,12 @@ const ACTS=[
   {id:'pic', label:'Find the word', who:'by yourself', whoIcon:'child', glyph:icon('picture')}
 ];
 function renderHome(){
-  rollDay(); const done=S.today.done;
+  rollDay(); const done=!!S.settings.limit&&S.today.done;
   $('tiles').innerHTML=ACTS.map(a=>`<button class="tile ${done?'locked':''}" data-act="${a.id}" aria-label="${a.label}"><span class="glyph">${a.glyph}</span><span class="label">${a.label}</span><span class="who">${icon(a.whoIcon)} ${a.who}</span></button>`).join('');
   $('home-note').textContent=done?'Reading time is finished for today.':(S.today.rounds?`${S.today.rounds} round${S.today.rounds>1?'s':''} today`:'');
   $('levels').innerHTML=[0,1,2].map(i=>`<button class="lvl ${(S.level||0)===i?'on':''}" data-lv="${i}" aria-label="${['Easy','Medium','Hard'][i]}"><span class="kites">${icon('kite').repeat(i+1)}</span><span class="lab">${['Easy','Medium','Hard'][i]}</span></button>`).join('');
   document.querySelectorAll('.lvl').forEach(b=>b.addEventListener('click',()=>{ S.level=+b.dataset.lv; save(); renderHome(); }));
-  document.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{ if(S.today.done){ show('s-alldone'); return; } start(t.dataset.act); }));
+  document.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{ if(S.settings.limit&&S.today.done){ show('s-alldone'); return; } start(t.dataset.act); }));
 }
 function pointerHold(el,ms,onDone,fillEl){
   let t=null,start=0,raf=null;
@@ -539,12 +539,12 @@ function endRound(){
   if(P.act==='cards'){ s.cards+=P.cards; s.helped+=P.helped; }
   if(P.act==='real') maybeUnlock();
   S.today.rounds++; save();
-  const over=S.today.rounds>=6||S.today.ms>=24*60*1000; if(over){ S.today.done=true; save(); }
+  const over=!!S.settings.limit&&(S.today.rounds>=6||S.today.ms>=24*60*1000); if(over){ S.today.done=true; save(); }
   $('end-title').textContent=over?'The kite flew all the way up.':'The kite flew high.';
   $('end-text').textContent=over?'Reading time is finished for today.':'';
   $('btn-end-more').hidden=over; show('s-end');
 }
-$('btn-end-home').addEventListener('click',()=>{ renderHome(); show(S.today.done?'s-alldone':'s-home'); });
+$('btn-end-home').addEventListener('click',()=>{ renderHome(); show(S.settings.limit&&S.today.done?'s-alldone':'s-home'); });
 $('btn-end-more').addEventListener('click',()=>{ renderHome(); show('s-home'); });
 $('btn-alldone-home').addEventListener('click',()=>{ renderHome(); show('s-home'); });
 
@@ -563,7 +563,7 @@ function renderHow(){
   <div class="tipcard"><b>Patterns unlock in stages</b>Short vowels first, then silent e and r-controlled vowels, then digraphs and blends, then three-consonant blends. A stage unlocks after two flashcard sessions above 90% without help. You can set the stage by hand in Settings.</div>
   <div class="tipcard"><b>Three-second rule</b>If the child stalls for three seconds, tell them the word, tap the hand, and move on. Say what they did well, such as "you said every sound," rather than "good job."</div>
   <div class="tipcard"><b>Easy, Medium, Hard</b>The kites on the home screen set the level for all three games. Easy follows the unlocked pattern stage. Medium opens digraphs and blends and mixes in make-believe words that are one letter away from real ones. Hard uses every pattern, three-consonant blends, four picture choices, and distractors that are real words.</div>
-  <div class="tipcard"><b>Keep it short</b>Rounds are 20 cards. After six rounds or twenty-four minutes the app stops for the day. Make-believe words should be a small part of reading time. Read real books together every day.</div>
+  <div class="tipcard"><b>Keep it short</b>Rounds are 20 cards. The daily limit is off by default; turn it on in Settings to stop play after six rounds or twenty-four minutes. Make-believe words should be a small part of reading time. Read real books together every day.</div>
   </div>`;
 }
 // ---------- Timed run (NWF) ----------
@@ -640,7 +640,8 @@ function renderSettings(){
   <div class="field"><label>Speed</label><input type="range" id="set-rate" min="0.6" max="1.1" step="0.05" value="${S.settings.rate}"><span class="note" id="set-rate-v">${S.settings.rate}</span></div>
   <div class="field"><label>Benchmark period</label>${[['auto','Automatic'],['B','Beginning'],['M','Middle'],['E','End']].map(([v,l])=>`<button class="pbtn ${S.settings.period===v?'on':''}" data-period="${v}">${l}</button>`).join('')}</div>
   <div class="field"><label>Pattern stage</label><button class="pbtn ${S.settings.stageOverride===null?'on':''}" data-stage="auto">Automatic (${S.stage+1})</button>${STAGES.map((st,i)=>`<button class="pbtn ${S.settings.stageOverride===i?'on':''}" data-stage="${i}">${i+1}. ${st.name}</button>`).join('')}</div>
-  <div class="field"><button class="pbtn" id="set-more">Allow one more round today</button><span class="note">${S.today.done?'Today is marked finished.':'Today is not finished.'}</span></div>
+  <div class="field"><label>Daily limit</label><button class="pbtn ${S.settings.limit?'on':''}" id="set-limit">${S.settings.limit?'On: six rounds or 24 minutes':'Off'}</button><span class="note">When on, play stops for the day after six rounds or twenty-four minutes.</span></div>
+  <div class="field"><button class="pbtn" id="set-more">Allow one more round today</button><span class="note">${S.settings.limit&&S.today.done?'Today is marked finished.':'Today is not finished.'}</span></div>
   <h3>On the iPad</h3><p>Open this page in Safari, tap Share, then "Add to Home Screen." It opens full screen and keeps its data on the device. Deleting the icon deletes the data, so copy the data from Progress now and then.</p>
   <h3>Data</h3><div class="field"><button class="pbtn warn" id="set-reset">Hold to erase everything</button></div>
   <p class="note">Practice words are original. The official DIBELS 8th Edition forms are copyright University of Oregon and are not included. Benchmark goals are the published first-grade cut points dated July 2020.</p>`;
@@ -649,6 +650,7 @@ function renderSettings(){
   $('set-rate').addEventListener('input',e=>{ S.settings.rate=+e.target.value; $('set-rate-v').textContent=S.settings.rate; save(); });
   $('pane-settings').querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{ S.settings.period=b.dataset.period; save(); openParent(); }));
   $('pane-settings').querySelectorAll('[data-stage]').forEach(b=>b.addEventListener('click',()=>{ S.settings.stageOverride=b.dataset.stage==='auto'?null:+b.dataset.stage; save(); openParent(); }));
+  $('set-limit').addEventListener('click',()=>{ S.settings.limit=!S.settings.limit; if(!S.settings.limit) S.today.done=false; save(); renderSettings(); });
   $('set-more').addEventListener('click',()=>{ rollDay(); S.today.done=false; S.today.rounds=Math.min(S.today.rounds,5); S.today.ms=Math.min(S.today.ms,20*60*1000); save(); toast('One more round allowed.'); renderSettings(); });
   pointerHold($('set-reset'),3000,()=>{ localStorage.removeItem(KEY); S=JSON.parse(JSON.stringify(DEFAULT)); save(); toast('Erased.'); openParent(); });
 }
