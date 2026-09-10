@@ -56,7 +56,7 @@ button:focus-visible{outline:3px solid var(--name);outline-offset:3px}
 .home{flex:1;display:flex;flex-direction:column;padding:6px 18px 18px;gap:14px;min-height:0}
 .brand{font-family:var(--f-ui);font-weight:600;font-size:30px;text-wrap:balance}
 .brand small{display:block;font-family:var(--f-read);font-weight:400;font-size:15px;color:var(--ink-soft);margin-top:2px}
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;flex:1;min-height:0}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;flex:1;min-height:0}
 @media (max-width:700px){.tiles{grid-template-columns:1fr}}
 .tile{background:var(--card);border-radius:22px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;position:relative;border:4px solid transparent;min-height:140px}
 .tile:active{transform:scale(.98)}
@@ -437,8 +437,7 @@ function maybeUnlock(){
 // ---------- Home ----------
 const ACTS=[
   {id:'cards', label:'Flashcards', who:'say it, then check', whoIcon:'child', glyph:icon('cards')},
-  {id:'real', label:'Real or make-believe?', who:'by yourself', whoIcon:'child', glyph:'<span style="display:flex;gap:6px">'+icon('book')+icon('monster')+'</span>'},
-  {id:'pic', label:'Find the word', who:'by yourself', whoIcon:'child', glyph:icon('picture')}
+  {id:'real', label:'Real or make-believe?', who:'by yourself', whoIcon:'child', glyph:'<span style="display:flex;gap:6px">'+icon('book')+icon('monster')+'</span>'}
 ];
 function renderHome(){
   rollDay(); const done=!!S.settings.limit&&S.today.done;
@@ -459,7 +458,7 @@ pointerHold($('gate'),3000,()=>openParent(),$('gate').querySelector('.fill'));
 
 // ---------- Play engine ----------
 const P={act:null,queue:[],i:0,total:0,cards:0,helped:0,ok:0,helpedThis:false,busy:false,enter:0,cur:null};
-const ROUND_N={cards:20,real:20,pic:20};
+const ROUND_N={cards:20,real:20};
 function setKite(f){ $('kite').style.left=(4+92*Math.max(0,Math.min(1,f)))+'%'; }
 function leavePlay(){ if(P.enter){ const ms=Date.now()-P.enter; S.today.ms+=ms; const s=currentSession(); s.minutes=(s.minutes||0)+ms/60000; P.enter=0; } save(); }
 $('btn-home').addEventListener('click',()=>{ leavePlay(); renderHome(); show('s-home'); });
@@ -473,38 +472,16 @@ function start(act){
     if(lv===2){ const hardReal=shuffle(real.filter(w=>stageOf(w)>=2)); if(hardReal.length>=n) real=hardReal.slice(0,Math.ceil(n*0.7)).concat(shuffle(real.filter(w=>stageOf(w)<2))); }
     real=shuffle(real).filter((w,i,a)=>a.indexOf(w)===i).slice(0,n);
     P.queue=shuffle(fake.map(w=>({w,real:false})).concat(real.map(w=>({w,real:true})))); }
-  if(act==='pic'){ const lv=S.level||0; let cands=PICS.filter(([w])=>stageOf(w)<=lvlStage()); if(lv===2){ const h=cands.filter(([w])=>stageOf(w)>=1); if(h.length>=ROUND_N.pic) cands=h; } P.queue=shuffle(cands.length>=ROUND_N.pic?cands:PICS).slice(0,ROUND_N.pic).map(([w,e])=>({w,e,opts:distractors(w,lv===0?3:4,lv===2)})); }
   P.total=P.queue.length; show('s-play'); setKite(0);
   $('bar').innerHTML= act==='cards' ? `<button class="act readit" id="b-read" aria-label="Check">${icon('check')}</button>` : '';
   if(act==='cards'){ $('b-read').addEventListener('click',onCheck); }
   next();
-}
-const RUDE=new Set('queef queer jizz cum tit tits ass arse shit fuck cock dick cunt fag fap piss poop crap damn sex wank twat slut whore bitch nig spic kike chink gook turd fart butt boob boobs dong wang dyke homo tard pussy pube pubes anus anal bum suck prick scum dildo penis vagina'.split(' '));
-const VOW='aeiou', CONS='bcdfghjklmnprstvwyz';
-function mutate(w){
-  const L=w.length; const ok=i=>{ const c=w[i]; if(c==='q'||(i>0&&w[i-1]==='q')) return false; const isV=VOW.includes(c);
-    if(isV){ if(i>0&&VOW.includes(w[i-1])) return false; if(i<L-1&&VOW.includes(w[i+1])) return false; if(i===L-1&&c==='e') return false; return true; }
-    if(i===0) return L>1&&VOW.includes(w[1]); if(i===L-1) return VOW.includes(w[L-2]); return VOW.includes(w[i-1])&&VOW.includes(w[i+1]); };
-  const idxs=[...w].map((c,i)=>i).filter(ok); if(!idxs.length) return null;
-  const FINALS='bdfgklmnprstz';
-  for(let t=0;t<40;t++){ const i=pick(idxs); const c=w[i]; const pool=VOW.includes(c)?VOW:(i===L-1?FINALS:CONS); const r=pool[Math.floor(Math.random()*pool.length)]; if(r===c) continue;
-    const alt=w.slice(0,i)+r+w.slice(i+1); if(alt===w||RUDE.has(alt)||PIC_EMOJI[alt]||/(.)\1\1/.test(alt)) continue; return alt; }
-  return null;
-}
-function distractors(w,n,hard){
-  const want=n-1; const out=new Set();
-  if(hard){ shuffle(nearWords(w).filter(x=>!RUDE.has(x)&&!PIC_EMOJI[x])).slice(0,want).forEach(x=>out.add(x)); }
-  let guard=0; while(out.size<want&&guard++<80){ const alt=mutate(w); if(alt) out.add(alt); }
-  const vowels=['a','e','i','o','u']; const m=w.match(/[aeiou]/);
-  if(out.size<want&&m){ for(const v of shuffle(vowels)){ if(out.size>=want) break; const alt=w.slice(0,m.index)+v+w.slice(m.index+1); if(alt!==w&&!RUDE.has(alt)) out.add(alt); } }
-  return shuffle([w,...out]);
 }
 function next(){
   if(P.i>=P.queue.length) return endRound();
   P.cur=P.queue[P.i]; P.helpedThis=false; P.triedThis=false; P.busy=false; setKite(P.i/P.total);
   if(P.act==='cards'){ $('stage').innerHTML=`<div class="card">${wordHTML(P.cur)}</div>`; }
   if(P.act==='real'){ $('stage').innerHTML=`<div class="card">${wordHTML(P.cur.w)}</div><div class="choices"><button class="choice labeled" data-real="0" aria-label="Make-believe word">${icon('monster')}<span>Make-believe</span></button><button class="choice labeled" data-real="1" aria-label="Real word">${icon('book')}<span>Real</span></button></div>`; document.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>onReal(b))); }
-  if(P.act==='pic'){ $('stage').innerHTML=`<div class="card"><div class="pic">${P.cur.e}</div></div><div class="choices">${P.cur.opts.map(o=>`<button class="choice" data-w="${o}">${o}</button>`).join('')}</div>`; document.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>onPic(b))); }
 }
 async function onCheck(){
   if(P.busy) return; P.busy=true; const key=P.cur;
@@ -521,17 +498,6 @@ async function onReal(b){
   if(it.real&&PIC_EMOJI[it.w]) card.insertAdjacentHTML('beforeend',`<span class="corner">${PIC_EMOJI[it.w]}</span>`);
   card.classList.add(right?'ok':'oops');
   if(right){ P.ok++; await wait(900); } else { await showParts($('stage')); await wait(2200); }
-  P.cards++; P.i++; save(); next();
-}
-async function onPic(b){
-  if(P.busy) return; P.busy=true; const it=P.cur, right=b.dataset.w===it.w;
-  const s=currentSession(); const card=$('stage').querySelector('.card');
-  const correctBtn=document.querySelector(`.choice[data-w="${it.w}"]`);
-  if(!right&&!P.triedThis){ P.triedThis=true; s.picN++; b.classList.add('dim'); card.classList.add('oops'); await wait(350); P.busy=false; return; }
-  if(!P.triedThis){ s.picN++; s.picOk++; P.ok++; }
-  document.querySelectorAll('.choice').forEach(x=>x.classList.toggle('dim',x!==correctBtn)); correctBtn.classList.add('glow');
-  card.classList.remove('oops'); card.classList.add(right?'ok':'oops');
-  if(right){ await wait(900); } else { correctBtn.innerHTML=wordHTML(it.w).replace('class="word"','class="word" style="font-size:inherit"'); await wait(600); await showParts(correctBtn); await wait(2200); }
   P.cards++; P.i++; save(); next();
 }
 function endRound(){
@@ -559,10 +525,9 @@ function renderHow(){
   <div class="grid2">
   <div class="tipcard"><b>Flashcards</b>The child reads the make-believe word aloud, then taps the green check. The iPad says the word so the child can hear whether it matched. For a more natural voice, download an Enhanced or Premium English voice on the iPad (Settings, Accessibility, Spoken Content, Voices) and pick it under Settings here. Two-letter and silent-e words are respelled for the voice, but listen to a few first, since the voice guesses at spellings it has never seen.</div>
   <div class="tipcard"><b>Real or make-believe? (alone)</b>A word appears. The monster on the left means make-believe, the book on the right means real. To decide, the child has to read the word and check it against words they know, so this tests decoding without anyone listening. Real words show a small picture when one exists. Mistakes show the parts.</div>
-  <div class="tipcard"><b>Find the word (alone)</b>A picture and three words that differ by one letter. Tap the word that matches. A wrong tap fades that choice and the child gets one more try before the answer is shown. This checks that the child reads every letter rather than guessing from the first one. Only first-try answers count in Progress.</div>
   <div class="tipcard"><b>Patterns unlock in stages</b>Short vowels first, then silent e and r-controlled vowels, then digraphs and blends, then three-consonant blends. A stage unlocks after two flashcard sessions above 90% without help. You can set the stage by hand in Settings.</div>
   <div class="tipcard"><b>Three-second rule</b>If the child stalls for three seconds, tell them the word, tap the hand, and move on. Say what they did well, such as "you said every sound," rather than "good job."</div>
-  <div class="tipcard"><b>Easy, Medium, Hard</b>The kites on the home screen set the level for all three games. Easy follows the unlocked pattern stage. Medium opens digraphs and blends and mixes in make-believe words that are one letter away from real ones. Hard uses every pattern, three-consonant blends, four picture choices, and distractors that are real words.</div>
+  <div class="tipcard"><b>Easy, Medium, Hard</b>The kites on the home screen set the level for all three games. Easy follows the unlocked pattern stage. Medium opens digraphs and blends and mixes in make-believe words that are one letter away from real ones. Hard uses every pattern, three-consonant blends.</div>
   <div class="tipcard"><b>Keep it short</b>Rounds are 20 cards. The daily limit is off by default; turn it on in Settings to stop play after six rounds or twenty-four minutes. Make-believe words should be a small part of reading time. Read real books together every day.</div>
   </div>`;
 }
@@ -623,7 +588,7 @@ function renderProgress(){
   const learning=Object.keys(S.mastery).filter(k=>S.mastery[k].s===0&&S.mastery[k].seen>0);
   const conf=Object.entries(S.confus).sort((a,b)=>b[1]-a[1]).slice(0,12);
   let html=`<h2>Progress</h2><p>${mins} minute${mins===1?'':'s'} in the last seven days across ${week.length} day${week.length===1?'':'s'}. Current stage: ${stage()+1} of ${STAGES.length}, ${STAGES[stage()].name}.</p>`;
-  html+=`<h3>Sessions</h3>`+(S.sessions.length?`<table><tr><th>Date</th><th>Flashcards</th><th>Helped</th><th>Real or not</th><th>Find the word</th><th>Stage</th></tr>${S.sessions.slice(-10).reverse().map(s=>`<tr><td>${s.date}</td><td>${s.cards}</td><td>${s.cards?Math.round(100*s.helped/s.cards)+'%':'-'}</td><td>${s.realN?Math.round(100*s.realOk/s.realN)+'% of '+s.realN:'-'}</td><td>${s.picN?Math.round(100*s.picOk/s.picN)+'% of '+s.picN:'-'}</td><td>${(s.stage||0)+1}</td></tr>`).join('')}</table>`:'<p class="note">No sessions yet.</p>');
+  html+=`<h3>Sessions</h3>`+(S.sessions.length?`<table><tr><th>Date</th><th>Flashcards</th><th>Helped</th><th>Real or not</th><th>Stage</th></tr>${S.sessions.slice(-10).reverse().map(s=>`<tr><td>${s.date}</td><td>${s.cards}</td><td>${s.cards?Math.round(100*s.helped/s.cards)+'%':'-'}</td><td>${s.realN?Math.round(100*s.realOk/s.realN)+'% of '+s.realN:'-'}</td><td>${(s.stage||0)+1}</td></tr>`).join('')}</table>`:'<p class="note">No sessions yet.</p>');
   html+=`<h3>Timed runs</h3>`+(S.timed.length?`<table><tr><th>Date</th><th>Letter sounds</th><th>Words recoded</th><th>Attempted</th></tr>${S.timed.slice(-8).reverse().map(r=>`<tr><td>${r.date}</td><td>${pill('cls',r.cls,r.period)}</td><td>${pill('wrc',r.wrc,r.period)}</td><td>${r.attempted}</td></tr>`).join('')}</table>`:'<p class="note">No timed runs yet.</p>');
   html+=`<h3>Goals this period (${PERIOD_NAMES[pi].toLowerCase()})</h3><table><tr><th>Measure</th><th>Blue</th><th>Green</th><th>Yellow</th></tr>${Object.entries(GOALS).map(([k,g])=>`<tr><td>${g.label}</td><td>${g.blue[pi]}+</td><td>${g.green[pi]}+</td><td>${g.yellow[pi]}+</td></tr>`).join('')}</table>`;
   html+=`<h3>Still learning</h3><p>${learning.length?learning.join(', '):'<span class="note">Nothing waiting.</span>'}</p>`;
