@@ -497,7 +497,8 @@ async function onReal(b){
   document.querySelectorAll('.choice').forEach(x=>x.classList.toggle('dim',x!==correctBtn)); correctBtn.classList.add('glow');
   if(it.real&&PIC_EMOJI[it.w]) card.insertAdjacentHTML('beforeend',`<span class="corner">${PIC_EMOJI[it.w]}</span>`);
   card.classList.add(right?'ok':'oops');
-  if(right){ P.ok++; await wait(900); } else { await showParts($('stage')); await wait(2200); }
+  const said=it.real?it.w:sayNonsense(it.w);
+  if(right){ P.ok++; await wait(300); await speak(said); await wait(600); } else { await showParts($('stage')); await speak(said); await wait(1800); }
   P.cards++; P.i++; save(); next();
 }
 function endRound(){
@@ -524,7 +525,7 @@ function renderHow(){
   $('pane-how').innerHTML=`<h2>How to play</h2>
   <div class="grid2">
   <div class="tipcard"><b>Flashcards</b>The child reads the make-believe word aloud, then taps the green check. The iPad says the word so the child can hear whether it matched. For a more natural voice, download an Enhanced or Premium English voice on the iPad (Settings, Accessibility, Spoken Content, Voices) and pick it under Settings here. Two-letter and silent-e words are respelled for the voice, but listen to a few first, since the voice guesses at spellings it has never seen.</div>
-  <div class="tipcard"><b>Real or make-believe? (alone)</b>A word appears. The monster on the left means make-believe, the book on the right means real. To decide, the child has to read the word and check it against words they know, so this tests decoding without anyone listening. Real words show a small picture when one exists. Mistakes show the parts.</div>
+  <div class="tipcard"><b>Real or make-believe? (alone)</b>A word appears. The monster on the left means make-believe, the book on the right means real. To decide, the child has to read the word and check it against words they know, so this tests decoding without anyone listening. Real words show a small picture when one exists. After each answer the iPad says the word. Mistakes show the parts first.</div>
   <div class="tipcard"><b>Patterns unlock in stages</b>Short vowels first, then silent e and r-controlled vowels, then digraphs and blends, then three-consonant blends. A stage unlocks after two flashcard sessions above 90% without help. You can set the stage by hand in Settings.</div>
   <div class="tipcard"><b>Three-second rule</b>If the child stalls for three seconds, tell them the word, tap the hand, and move on. Say what they did well, such as "you said every sound," rather than "good job."</div>
   <div class="tipcard"><b>Easy, Medium, Hard</b>The kites on the home screen set the level for all three games. Easy follows the unlocked pattern stage. Medium opens digraphs and blends and mixes in make-believe words that are one letter away from real ones. Hard uses every pattern, three-consonant blends.</div>
