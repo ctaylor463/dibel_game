@@ -70,7 +70,8 @@ button:focus-visible{outline:3px solid var(--name);outline-offset:3px}
 .lvl{flex:1;background:var(--card);border-radius:18px;box-shadow:var(--shadow);border:4px solid transparent;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:84px}
 .lvl.on{border-color:var(--accent)}
 .lvl .kites{display:flex;gap:2px}
-.lvl .kites svg{width:30px;height:30px}
+.lvl .kites svg{width:24px;height:24px}
+.word.long{font-size:min(12vw,80px)}
 .lvl .lab{font-family:var(--f-ui);font-size:14px;color:var(--ink-soft)}
 .lvl.on .lab{color:var(--ink)}
 .homefoot{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -336,6 +337,7 @@ function sessionIdx(){ return S.sessions.length; }
 function currentSession(){ rollDay(); let s=S.sessions[S.sessions.length-1]; if(!s||s.date!==S.todayKey){ s={date:S.todayKey,cards:0,helped:0,realN:0,realOk:0,picN:0,picOk:0,minutes:0,stage:lvlStage(),level:S.level||0}; S.sessions.push(s); } return s; }
 function periodIdx(){ const p=S.settings.period; if(p==='B')return 0; if(p==='M')return 1; if(p==='E')return 2; const m=new Date().getMonth(); if(m>=7&&m<=10)return 0; if(m===11||m<=1)return 1; return 2; }
 function stage(){ return S.settings.stageOverride!==null&&S.settings.stageOverride!==undefined ? S.settings.stageOverride : S.stage; }
+const LV_NAMES=['Easy','Medium','Hard','Expert'];
 function lvlStage(){ const lv=S.level||0; return lv===0?stage():lv===1?Math.max(2,stage()):3; }
 
 // ---------- Utilities ----------
@@ -371,6 +373,7 @@ const SAY_OVERRIDE={tid:'tidd',pid:'pidd',kib:'kibb',mig:'migg',lem:'lemm',sut:'
 // Short strings are respelled with a doubled final consonant so the voice reads them as words rather than as initialisms.
 function sayNonsense(w){
   let m; if(SAY_OVERRIDE[w]) return SAY_OVERRIDE[w];
+  if(typeof COMPOUND_PARTS!=='undefined'&&COMPOUND_PARTS[w]){ const [a,b]=COMPOUND_PARTS[w]; return sayNonsense(a)+sayNonsense(b); }
   if((m=w.match(/^([aeiou])([^aeiou])$/))) return m[2]==='k'? m[1]+'ck' : w+m[2];
   if((m=w.match(/^([^aeiou]{1,3})([aeiou])([^aeiou])e$/))){ const V={a:'ay',e:'ee',i:'y',o:'oa',u:'oo'}[m[2]]; let out=m[1]+V+m[3]; if(m[2]==='i') out+='e'; if(m[2]==='u'&&m[3]==='d') out=m[1]+'ooed'; return out; }
   if((m=w.match(/^([^aeiou])([aeiou])([bdfglmnptz])$/))) return m[3]==='k'? w.slice(0,-1)+'ck' : w+m[3];
@@ -387,7 +390,7 @@ function parseWord(w){
   for(let i=0;i<w.length;){ const two=w.slice(i,i+2); if(TWO[two]){ u.push({t:two}); i+=2; } else { u.push({t:w[i]}); i++; } }
   return u;
 }
-function wordHTML(w){ return `<div class="word">${parseWord(w).map((x,i)=>`<span class="g ${x.silent?'silent':''}" data-i="${i}">${x.t}</span>`).join('')}</div>`; }
+function wordHTML(w){ return `<div class="word ${w.length>=6?'long':''}">${parseWord(w).map((x,i)=>`<span class="g ${x.silent?'silent':''}" data-i="${i}">${x.t}</span>`).join('')}</div>`; }
 async function showParts(container){
   const word=container.querySelector('.word'); if(!word) return; const gs=[...word.querySelectorAll('.g')];
   word.classList.add('split'); await wait(600);
@@ -407,13 +410,18 @@ const REAL_SET=new Set(Object.values(REAL).flat().concat(PICS.map(p=>p[0])));
 const nearCache={};
 function nearWords(w){ if(nearCache[w]) return nearCache[w]; const out=[]; for(let i=0;i<w.length;i++) for(const ch of 'abcdefghijklmnopqrstuvwxyz'){ if(ch===w[i]) continue; const alt=w.slice(0,i)+ch+w.slice(i+1); if(REAL_SET.has(alt)) out.push(alt); } return nearCache[w]=out; }
 const isNearReal=w=>nearWords(w).length>0;
+// Expert level: two-syllable make-believe words built from two vetted short ones.
+const RUDE_SUB=['ass','sex','cum','tit','fag','fuk','fuc','dik','dic','cok','coc','pis','poo','pee','bum','wank','cunt','nig','jiz','dam','crap','hell','fart','turd','anus','anal','boob','dong','wang','homo','tard','slut','twat'];
+const COMPOUNDS=[], COMPOUND_PARTS={};
+{ const c=NWF.cvc; for(let i=0;i<c.length&&COMPOUNDS.length<240;i++){ const a=c[i], b=c[(i*7+11)%c.length]; if(a===b) continue; const w=a+b; if(TWO[a.slice(-1)+b[0]]||a.slice(-1)===b[0]) continue; if(RUDE_SUB.some(r=>w.includes(r))||REAL_SET.has(w)) continue; COMPOUNDS.push(w); COMPOUND_PARTS[w]=[a,b]; } }
+const LONG_REAL=PICS.map(p=>p[0]).filter(w=>w.length>=5&&!/[^a-z]/.test(w));
 
 // ---------- Mastery ----------
 function M(key){ return S.mastery[key]=S.mastery[key]||{s:0,due:0,help:0,seen:0,ok:0,streak:0}; }
 function markOk(key){ const m=M(key); m.seen++; m.ok++; m.streak++; m.s=Math.min(2,m.s+1); m.due=sessionIdx()+[1,3,7][Math.min(m.streak-1,2)]; }
 function markHelp(key){ const m=M(key); m.seen++; m.help++; m.streak=0; m.s=0; m.due=sessionIdx(); }
-function nonsensePool(){ let p=[]; for(let i=0;i<=lvlStage();i++) STAGES[i].keys.forEach(k=>p=p.concat(NWF[k])); return p; }
-function newestPool(){ let p=[]; STAGES[lvlStage()].keys.forEach(k=>p=p.concat(NWF[k])); return p; }
+function nonsensePool(){ let p=[]; for(let i=0;i<=lvlStage();i++) STAGES[i].keys.forEach(k=>p=p.concat(NWF[k])); if((S.level||0)===3) p=p.concat(COMPOUNDS); return p; }
+function newestPool(){ if((S.level||0)===3) return COMPOUNDS.slice(); let p=[]; STAGES[lvlStage()].keys.forEach(k=>p=p.concat(NWF[k])); return p; }
 function buildRound(n){
   const pool=nonsensePool(), idx=sessionIdx(), mm=S.mastery;
   const learning=pool.filter(k=>mm[k]&&mm[k].s===0&&mm[k].seen>0);
@@ -444,7 +452,7 @@ function renderHome(){
   rollDay(); const done=!!S.settings.limit&&S.today.done;
   $('tiles').innerHTML=ACTS.map(a=>`<button class="tile ${done?'locked':''}" data-act="${a.id}" aria-label="${a.label}"><span class="glyph">${a.glyph}</span><span class="label">${a.label}</span><span class="who">${icon(a.whoIcon)} ${a.who}</span></button>`).join('');
   $('home-note').textContent=done?'Reading time is finished for today.':(S.today.rounds?`${S.today.rounds} round${S.today.rounds>1?'s':''} today`:'');
-  $('levels').innerHTML=[0,1,2].map(i=>`<button class="lvl ${(S.level||0)===i?'on':''}" data-lv="${i}" aria-label="${['Easy','Medium','Hard'][i]}"><span class="kites">${icon('kite').repeat(i+1)}</span><span class="lab">${['Easy','Medium','Hard'][i]}</span></button>`).join('');
+  $('levels').innerHTML=[0,1,2,3].map(i=>`<button class="lvl ${(S.level||0)===i?'on':''}" data-lv="${i}" aria-label="${LV_NAMES[i]}"><span class="kites">${icon('kite').repeat(i+1)}</span><span class="lab">${LV_NAMES[i]}</span></button>`).join('');
   document.querySelectorAll('.lvl').forEach(b=>b.addEventListener('click',()=>{ S.level=+b.dataset.lv; save(); renderHome(); }));
   document.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{ if(S.settings.limit&&S.today.done){ show('s-alldone'); return; } start(t.dataset.act); }));
 }
@@ -468,9 +476,11 @@ function start(act){
   if(act==='cards') P.queue=buildRound(ROUND_N.cards);
   if(act==='real'){ const n=ROUND_N.real/2, lv=S.level||0, fp=nonsensePool(); let fake;
     if(lv===0){ fake=shuffle(newestPool()).slice(0,Math.ceil(n*0.6)).concat(shuffle(fp)).filter((w,i,a)=>a.indexOf(w)===i).slice(0,n); }
+    else if(lv===3){ const comp=shuffle(COMPOUNDS).slice(0,Math.ceil(n/2)); const near=shuffle(fp.filter(w=>!COMPOUND_PARTS[w]&&isNearReal(w))).slice(0,n-comp.length); fake=comp.concat(near); }
     else { const near=shuffle(fp.filter(isNearReal)); const k=Math.min(near.length, lv===2?n:Math.ceil(n/2)); const nearSet=new Set(near.slice(0,k)); fake=[...nearSet].concat(shuffle(fp.filter(w=>!nearSet.has(w))).slice(0,n-k)); }
     let real=[]; for(let i=0;i<=lvlStage();i++) real=real.concat(REAL[i]); real=real.filter(w=>stageOf(w)<=lvlStage());
     if(lv===2){ const hardReal=shuffle(real.filter(w=>stageOf(w)>=2)); if(hardReal.length>=n) real=hardReal.slice(0,Math.ceil(n*0.7)).concat(shuffle(real.filter(w=>stageOf(w)<2))); }
+    if(lv===3){ real=shuffle(LONG_REAL).slice(0,Math.ceil(n*0.6)).concat(shuffle(real.filter(w=>stageOf(w)>=2))); }
     real=shuffle(real).filter((w,i,a)=>a.indexOf(w)===i).slice(0,n);
     P.queue=shuffle(fake.map(w=>({w,real:false})).concat(real.map(w=>({w,real:true})))); }
   P.total=P.queue.length; show('s-play'); setKite(0);
@@ -529,7 +539,7 @@ function renderHow(){
   <div class="tipcard"><b>Real or make-believe? (alone)</b>A word appears. The monster on the left means make-believe, the book on the right means real. To decide, the child has to read the word and check it against words they know, so this tests decoding without anyone listening. Real words show a small picture when one exists. After each answer the iPad says the word. Mistakes show the parts first.</div>
   <div class="tipcard"><b>Patterns unlock in stages</b>Short vowels first, then silent e and r-controlled vowels, then digraphs and blends, then three-consonant blends. A stage unlocks after two flashcard sessions above 90% without help. You can set the stage by hand in Settings.</div>
   <div class="tipcard"><b>Three-second rule</b>If the child stalls for three seconds, tell them the word, tap the hand, and move on. Say what they did well, such as "you said every sound," rather than "good job."</div>
-  <div class="tipcard"><b>Easy, Medium, Hard</b>The kites on the home screen set the level for all three games. Easy follows the unlocked pattern stage. Medium opens digraphs and blends and mixes in make-believe words that are one letter away from real ones. Hard uses every pattern, three-consonant blends.</div>
+  <div class="tipcard"><b>Levels</b>The kites on the home screen set the level for both games. Easy follows the unlocked pattern stage. Medium opens digraphs and blends and mixes in make-believe words that are one letter away from real ones. Hard uses every pattern including three-consonant blends. Expert adds two-syllable make-believe words such as fimzat, built from two short ones, and in "Real or make-believe?" the real words are long ones like pumpkin and umbrella while the fakes all look almost real.</div>
   <div class="tipcard"><b>Keep it short</b>Rounds are 20 cards. The daily limit is off by default; turn it on in Settings to stop play after six rounds or twenty-four minutes. Make-believe words should be a small part of reading time. Read real books together every day.</div>
   </div>`;
 }
